@@ -131,7 +131,7 @@
       const selectedModel = modelSelect.value;
 
       try {
-        const response = await fetch(`/${selectedModel}`, {
+        const response = await fetch(`https://llmclass-j433.onrender.com/${selectedModel}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: userMessage })
