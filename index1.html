@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Asistente IA</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #1e1e2f;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px;
+      margin: 0;
+    }
+
+    h2 {
+      margin-bottom: 10px;
+      color: #00ffc8;
+    }
+
+    #model-select {
+      margin-bottom: 20px;
+      padding: 8px;
+      border-radius: 8px;
+      background-color: #2a2a40;
+      color: white;
+      border: 1px solid #00ffc8;
+    }
+
+    #chat-container {
+      width: 100%;
+      max-width: 600px;
+      max-height: 70vh;
+      overflow-y: auto;
+      background-color: #2a2a40;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    .message {
+      margin: 10px 0;
+      padding: 10px 14px;
+      border-radius: 10px;
+      line-height: 1.5;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+
+    .user {
+      background-color: #0059b3;
+      color: #fff;
+      align-self: flex-end;
+      text-align: right;
+      margin-left: auto;
+    }
+
+    .bot {
+      background-color: #44475a;
+      color: #c3ffdd;
+      align-self: flex-start;
+      text-align: left;
+      margin-right: auto;
+    }
+
+    #input-form {
+      display: flex;
+      width: 100%;
+      max-width: 600px;
+      margin-top: 20px;
+    }
+
+    #message-input {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px 0 0 8px;
+      outline: none;
+      background-color: #3a3a4f;
+      color: white;
+    }
+
+    #send-button {
+      padding: 12px 20px;
+      background-color: #00ffc8;
+      border: none;
+      border-radius: 0 8px 8px 0;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    #send-button:hover {
+      background-color: #00d6ab;
+    }
+  </style>
+</head>
+<body>
+  <h2>Asistente IA</h2>
+
+  <select id="model-select">
+    <option value="ai-chat">Gemma 3B (Google)</option>
+    <option value="ai-chat2">DeepSeek Prover</option>
+  </select>
+
+  <div id="chat-container"></div>
+
+  <form id="input-form">
+    <input type="text" id="message-input" placeholder="Escribe tu mensaje..." required />
+    <button type="submit" id="send-button">Enviar</button>
+  </form>
+
+  <script>
+    const chatContainer = document.getElementById('chat-container');
+    const inputForm = document.getElementById('input-form');
+    const messageInput = document.getElementById('message-input');
+    const modelSelect = document.getElementById('model-select');
+
+    inputForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const userMessage = messageInput.value.trim();
+      if (!userMessage) return;
+
+      appendMessage('user', userMessage);
+      messageInput.value = '';
+      appendMessage('bot', '⏳ Pensando...');
+
+      const selectedModel = modelSelect.value;
+
+      try {
+        const response = await fetch(`http://127.0.0.1:8000/${selectedModel}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: userMessage })
+        });
+
+        const data = await response.json();
+        removeLastMessage();
+        appendMessage('bot', data.response || data.status || 'Sin respuesta');
+      } catch (error) {
+        removeLastMessage();
+        appendMessage('bot', '❌ Error al conectar con el servidor.');
+      }
+    });
+
+    function appendMessage(sender, text) {
+      const messageEl = document.createElement('div');
+      messageEl.className = `message ${sender}`;
+      messageEl.textContent = text;
+      chatContainer.appendChild(messageEl);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function removeLastMessage() {
+      const last = chatContainer.lastChild;
+      if (last) chatContainer.removeChild(last);
+    }
+  </script>
+</body>
+</html>
