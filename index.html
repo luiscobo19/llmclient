@@ -138,9 +138,20 @@
         });
 
         const data = await response.json();
+        console.log("Respuesta recibida del backend:", data);
+        
         removeLastMessage();
-        appendMessage('bot', data.response || data.status || 'Sin respuesta');
+
+        if (data.response) {
+          appendMessage('bot', data.response);
+        } else if (data.error) {
+          appendMessage('bot', `❌ Error: ${data.error}`);
+        } else {
+          appendMessage('bot', '⚠️ Respuesta vacía o inesperada');
+        }
+
       } catch (error) {
+        console.error("Error al conectar con el servidor:", error);
         removeLastMessage();
         appendMessage('bot', '❌ Error al conectar con el servidor.');
       }
